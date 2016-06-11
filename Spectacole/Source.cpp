@@ -53,14 +53,14 @@ void orar(int h3, int m3, int h4, int m4)
 	spect *y = (spect*)calloc(1, sizeof(spect));
 	y = prim->urm;
 	int ultim_h = 0, ultim_m = 0, i = 1;
-	ultim_h = prim->h2;
-	ultim_m = prim->m2;
 	while (y != NULL)
 	{
-		if ((ultim_h * 60 + ultim_m) <= (y->h1 * 60 + y->m1))
+		if (((ultim_h * 60 + ultim_m) <= (y->h1 * 60 + y->m1)) && ((y->h1 * 60 + y->m1) >= (h3 * 60 + m3)) && ((y->h2 * 60 + y->m2)<=(h4*60+m4)))
 		{
-
+			printf("Spectacolul nr #%d cu titlul \"%s\" incepe la ora %d:%d si se incheie la ora %d:%d\n",i,y->nume,y->h1,y->m1,y->h2,y->m2);
+			i++;
 		}
+		y = y->urm;
 	}
 }
 
