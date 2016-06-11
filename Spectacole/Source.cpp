@@ -48,6 +48,22 @@ void afisare()
 	}
 }
 
+void orar(int h3, int m3, int h4, int m4)
+{
+	spect *y = (spect*)calloc(1, sizeof(spect));
+	y = prim->urm;
+	int ultim_h = 0, ultim_m = 0, i = 1;
+	ultim_h = prim->h2;
+	ultim_m = prim->m2;
+	while (y != NULL)
+	{
+		if ((ultim_h * 60 + ultim_m) <= (y->h1 * 60 + y->m1))
+		{
+
+		}
+	}
+}
+
 void ordonare_sfarsit()
 {
 	spect *y = (spect*)calloc(1, sizeof(spect));
@@ -83,7 +99,9 @@ void ordonare_sfarsit()
 				n->nume = (char*)calloc(1, sizeof(strlen(p) + 1));
 				strcpy(n->nume, p);
 			}
+			n = n->urm;
 		}
+		y = y->urm;
 	}
 }
 
@@ -92,6 +110,9 @@ void main()
 	int n = 0;
 	int h_1 = 0, m_1 = 0;
 	int h_2 = 0, m_2 = 0;
+
+	int h_3 = 0, m_3 = 0;
+	int h_4 = 0, m_4 = 0;
 	char x[1024];
 	prim = NULL;
 	ultim = NULL;
@@ -106,5 +127,17 @@ void main()
 		printf("%s", x);
 		adaugare(h_1,m_1,h_2,m_2,x);
 	}
+	/*afisare();
+	printf("Dati orele vizionarii\n");
+	printf("Ora inceput: ");
+	scanf("%d", &h_3);
+	printf("\nMinut inceput: ");
+	scanf("%d", &m_3);
+	printf("\nOra sfarsit: ");
+	scanf("%d", &h_4);
+	printf("Minut sfarsit: ");
+	scanf("%d", &m_4);*/
+	printf("\n\n\n\n\n\n\n\n");
+	ordonare_sfarsit();
 	afisare();
 }
