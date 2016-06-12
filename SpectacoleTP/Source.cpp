@@ -13,22 +13,16 @@ HINSTANCE hInst;
 bool window2closed = false;
 const char g_szClassName[] = "myWindowClass";
 int cmd;
-LRESULT CALLBACK windowprocessforwindow2(HWND handleforwindow2, UINT message, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK dddsss(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg)
-	{
-				case WM_INITDIALOG:
+WNDCLASSEX wc2;
+HWND b1, b2, b3, b4, c1, x;
 
-						  break;
-				case WM_DESTROY:
-				{				PostQuitMessage(0);
-				break;
-				}
-	}
-	return 0;
-}
-HWND b1, b2, b3, b4,c1;
+
+
+LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK windowprocessforwindow2(HWND handleforwindow2, UINT message, WPARAM wParam, LPARAM lParam);
+
+
+
 // Step 4: the Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -39,7 +33,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 					  char buff[] = "Adaugare spectacol";
 
-
+					 
 					  b1 = CreateWindow("BUTTON", buff, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 						  50, 100, 140, 100, hwnd, (HMENU)button_1, NULL, NULL);
 
@@ -51,7 +45,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 					  b4 = CreateWindow("BUTTON", "Afisare Spectacole", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 						  500, 100, 140, 100, hwnd, (HMENU)button_4, NULL, NULL);
-
+					
 					  break;
 	}
 
@@ -75,7 +69,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					   {
 					   case button_1:
 					   {
-										DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, (DLGPROC)dddsss);
+									x = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, (DLGPROC)adaugare);
+									ShowWindow(x,10);
+									UpdateWindow(x);
 									/*	c1= CreateWindow(
 											"EDIT",  // Predefined class; Unicode assumed 
 											"Select Video's",      // Button text 
@@ -162,7 +158,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
+LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
 
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == IDOK12)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow)
 {
@@ -185,6 +203,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = g_szClassName;
 	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+
+
+	/*
+	wc2.cbSize = sizeof(WNDCLASSEX);
+	wc2.style = 0;
+	wc2.lpfnWndProc = WndProc;
+	wc2.cbClsExtra = 0;
+	wc2.cbWndExtra = 0;
+	wc2.hInstance = hInstance;
+	wc2.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc2.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc2.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wc2.lpszMenuName = NULL;
+	wc2.lpszClassName = g_szClassName;
+	wc2.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	*/
 
 	if (!RegisterClassEx(&wc))
 	{
@@ -223,8 +257,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	//fereastra 2
 
-	/*WNDCLASSEX windowclassforwindow2;
-	ZeroMemory(&windowclassforwindow2, sizeof(WNDCLASSEX));
+	
+/*	ZeroMemory(&windowclassforwindow2, sizeof(WNDCLASSEX));
 	windowclassforwindow2.cbClsExtra = NULL;
 	windowclassforwindow2.cbSize = sizeof(WNDCLASSEX);
 	windowclassforwindow2.cbWndExtra = NULL;
@@ -287,11 +321,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	MessageBox(NULL,
 		"Both Windows are closed.  Program will now close.",
 		"",
-		MB_ICONINFORMATION);
-	return 0;*/
+		MB_ICONINFORMATION);*/
+	return 0;
 }
-/*
-LRESULT CALLBACK window*processforwindow2(HWND handleforwindow, UINT msg, WPARAM wParam, LPARAM lParam)
+
+LRESULT CALLBACK windowprocessforwindow2(HWND handleforwindow, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -309,4 +343,3 @@ LRESULT CALLBACK window*processforwindow2(HWND handleforwindow, UINT msg, WPARAM
 
 	return DefWindowProc(handleforwindow, msg, wParam, lParam);
 }
-*/
