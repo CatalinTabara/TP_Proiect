@@ -1,5 +1,7 @@
 #include <windows.h>
 #include "resource.h"
+#include<iostream>
+
 #define button_1		101
 #define button_2		102
 #define button_3		103
@@ -15,15 +17,15 @@ const char g_szClassName[] = "myWindowClass";
 int cmd;
 WNDCLASSEX wc2;
 HWND b1, b2, b3, b4, c1, x;
+char y[1024];
+int nr;
 
 
 
 LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT CALLBACK windowprocessforwindow2(HWND handleforwindow2, UINT message, WPARAM wParam, LPARAM lParam);
 
-
-
-// Step 4: the Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -158,6 +160,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
+
 LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);
@@ -174,6 +177,9 @@ LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		if (LOWORD(wParam) == IDOK12)
 		{
+			FILE *f = fopen("text.txt", "w");
+			GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
+			fprintf(f, "%s", y);
 			EndDialog(hwnd, LOWORD(wParam));
 			return (INT_PTR)TRUE;
 		}
@@ -181,6 +187,7 @@ LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow)
 {
@@ -231,11 +238,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
 		g_szClassName,
-		"The title of my window",
+		"Organizator spectacole",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, 700, 380,
 		NULL, NULL, hInstance, NULL);
-
+	
 	if (hwnd == NULL)
 	{
 		MessageBox(NULL, "Window Creation Failed!", "Error!",
