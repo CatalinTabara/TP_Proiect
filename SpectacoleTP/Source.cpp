@@ -16,13 +16,31 @@ bool window2closed = false;
 const char g_szClassName[] = "myWindowClass";
 int cmd;
 WNDCLASSEX wc2;
-HWND b1, b2, b3, b4, c1, x;
-char y[1024];
+HWND b1, b2, b3, b4, c1, adag, sterg;
+char y[1024],h1[7],h2[7];
 int nr;
 
+typedef struct spect
+{
+	char *nume;
+	int h1, m1;	//ora de incepere a spectacolului
+	int h2, m2;	//ora de incheiere a spectacolului
+	spect *urm;
+	spect *prec;
+};
+spect *prim, *ultim;
 
+void formare_lista(char* nume,char *inceput,char *sfarsit);
+
+void stergere(char *nume);
+
+void afisare();
+
+FILE *f = fopen("text.txt", "w");
 
 LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT CALLBACK sterge(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK windowprocessforwindow2(HWND handleforwindow2, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -71,80 +89,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					   {
 					   case button_1:
 					   {
-									x = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, (DLGPROC)adaugare);
-									ShowWindow(x,10);
-									UpdateWindow(x);
-									/*	c1= CreateWindow(
-											"EDIT",  // Predefined class; Unicode assumed 
-											"Select Video's",      // Button text 
-											WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,  // Styles 
-											10,         // x position 
-											460,        // y position 
-											100,        // Button width
-											25,         // Button height
-											hwnd,       // Parent window
-											(HMENU)IDC_COPIL, // Assign appropriate control ID
-											(HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
-											NULL);      // Pointer not needed.
-
-
-										ShowWindow(hwnd, cmd);
-										UpdateWindow(hwnd);
-										//Edit box
-					   
-						     // Create an edit box
-					  hEdit = CreateWindowEx(WS_EX_CLIENTEDGE,
-						  "EDIT",
-						  "",
-						  WS_CHILD | WS_VISIBLE |
-						  ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
-						  50,
-						  100,
-						  200,
-						  100,
-						  hwnd,
-						  (HMENU)IDC_MAIN_EDIT,
-						  GetModuleHandle(NULL),
-						  NULL);
-					  HGDIOBJ hfDefault = GetStockObject(DEFAULT_GUI_FONT);
-					  SendMessage(hEdit,
-						  WM_SETFONT,
-						  (WPARAM)hfDefault,
-						  MAKELPARAM(FALSE, 0));
-					  SendMessage(hEdit,
-						  WM_SETTEXT,
-						  NULL,
-						  (LPARAM)"Insert text here...");
-
-					  // Create a push button
-					  HWND hWndButton = CreateWindowEx(NULL,
-						  "BUTTON",
-						  "OK",
-						  WS_TABSTOP | WS_VISIBLE |
-						  WS_CHILD | BS_DEFPUSHBUTTON,
-						  50,
-						  220,
-						  100,
-						  24,
-						  hwnd,
-						  (HMENU)IDC_MAIN_BUTTON,
-						  GetModuleHandle(NULL),
-						  NULL);
-					  SendMessage(hWndButton,
-						  WM_SETFONT,
-						  (WPARAM)hfDefault,
-						  MAKELPARAM(FALSE, 0));*/
+									adag = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, (DLGPROC)adaugare);
+									ShowWindow(adag,10);
+									UpdateWindow(adag);
 										break;
 					   }
 
 					   case button_2:
 					   {
+										
 										break;
 					   }
 
 					   case button_3:
 					   {
-									
+										sterg = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG2), hwnd, (DLGPROC)sterge);
+										break;
 					   }
 
 					   case button_4:
@@ -177,9 +137,37 @@ LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		if (LOWORD(wParam) == IDOK12)
 		{
-			FILE *f = fopen("text.txt", "w");
 			GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
-			fprintf(f, "%s", y);
+			GetDlgItemText(hwnd, IDC_EDIT2, h1, 7);
+			GetDlgItemText(hwnd, IDC_EDIT4, h2, 7);
+			formare_lista(y, h1, h2);
+			
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+LRESULT CALLBACK sterge(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == IDOK)
+		{
+			GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
+			stergere(y);
 			EndDialog(hwnd, LOWORD(wParam));
 			return (INT_PTR)TRUE;
 		}
@@ -262,91 +250,185 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	return Msg.wParam;
 
 
-	//fereastra 2
-
-	
-/*	ZeroMemory(&windowclassforwindow2, sizeof(WNDCLASSEX));
-	windowclassforwindow2.cbClsExtra = NULL;
-	windowclassforwindow2.cbSize = sizeof(WNDCLASSEX);
-	windowclassforwindow2.cbWndExtra = NULL;
-	windowclassforwindow2.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	windowclassforwindow2.hCursor = LoadCursor(NULL, IDC_ARROW);
-	windowclassforwindow2.hIcon = NULL;
-	windowclassforwindow2.hIconSm = NULL;
-	windowclassforwindow2.hInstance = hInstance;
-	windowclassforwindow2.lpfnWndProc = (WNDPROC)windowprocessforwindow2;
-	windowclassforwindow2.lpszClassName = "window class2";
-	windowclassforwindow2.lpszMenuName = NULL;
-	windowclassforwindow2.style = CS_HREDRAW | CS_VREDRAW;
-
-	if (!RegisterClassEx(&windowclassforwindow2))
-	{
-		int nResult = GetLastError();
-		MessageBox(NULL,
-			"Window class creation failed for window 2",
-			"Window Class Failed",
-			MB_ICONERROR);
-	}
-
-	HWND handleforwindow2 = CreateWindowEx(NULL,
-		windowclassforwindow2.lpszClassName,
-		"Child Window",
-		WS_OVERLAPPEDWINDOW,
-		200,
-		150,
-		640,
-		480,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);
-
-	if (!handleforwindow2)
-	{
-		int nResult = GetLastError();
-
-		MessageBox(NULL,
-			"Window creation failed",
-			"Window Creation Failed",
-			MB_ICONERROR);
-	}
-
-	ShowWindow(handleforwindow2, nCmdShow);
-	SetParent(handleforwindow2, hwnd);
-	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG));
-	while (endprogram == false) {
-		if (GetMessage(&msg, NULL, 0, 0));
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		if (window1closed == true && window2closed == true) {
-			endprogram = true;
-		}
-	}
-	MessageBox(NULL,
-		"Both Windows are closed.  Program will now close.",
-		"",
-		MB_ICONINFORMATION);*/
+	//fereastra 2	
 	return 0;
 }
 
-LRESULT CALLBACK windowprocessforwindow2(HWND handleforwindow, UINT msg, WPARAM wParam, LPARAM lParam)
+void formare_lista(char *nume,char *inceput,char *sfarsit)
 {
-	switch (msg)
+	int i = 0, h_1 = 0, h_2 = 0, m_1 = 0, m_2 = 0;
+	char ore[4];
+	ore[0] = inceput[0];
+	ore[1] = inceput[1];
+	h_1 = atoi(ore);
+	ore[0] = inceput[3];
+	ore[1] = inceput[4];
+	m_1 = atoi(ore);
+	ore[0] = sfarsit[0];
+	ore[1] = sfarsit[1];
+	h_2 = atoi(ore);
+	ore[0] = sfarsit[3];
+	ore[1] = sfarsit[4];
+	m_2 = atoi(ore);
+	if ((h_1 > 24) || (h_2 > 24) || (m_1 > 60) || (m_2 > 60))				//Verificam daca orele introduse respecta formatul
 	{
-	case WM_DESTROY: {
-						 MessageBox(NULL,
-							 "Window 2 closed",
-							 "Message",
-							 MB_ICONINFORMATION);
-
-						 window2closed = true;
-						 return 0;
+		MessageBox(NULL, "A dat handicapatul ala cu viteza", "Eroare ba boule", MB_OK);
+			
 	}
-		break;
+	else if((h_1 == h_2) && (m_1 <= m_2))
+	{
+		fprintf(f, "succes 1 ");
+		MessageBox(NULL, "A dat handicapatul ala cu viteza!", "Eroare ba boule!", MB_OK);
 	}
-
-	return DefWindowProc(handleforwindow, msg, wParam, lParam);
+	else if (h_1 < h_2)	{
+		fprintf(f, "succes 2");
+		MessageBox(NULL, "A dat handicapatul ala cu viteza!", "Eroare ba boule!", MB_OK);
+	}
+	else {
+		spect *y = (spect*)calloc(1, sizeof(spect));
+		y->h1 = h_1;
+		y->h2 = h_2;
+		y->m1 = m_1;
+		y->m2 = m_2;
+		y->nume = (char*)calloc(1, sizeof(strlen(nume) + 1));
+		strcpy(y->nume, nume);
+		if (prim == NULL)
+		{
+			prim = (spect*)calloc(1, sizeof(spect));
+			prim = y;
+			ultim = y;
+			y->urm = 0;
+			y->prec = 0;
+		}
+		else
+		{
+			ultim->urm = y;
+			y->prec = ultim;
+			y->urm = 0;
+			ultim = y;
+		}
+	}
+	afisare();
 }
+
+void afisare()
+{
+	spect*y = (spect*)calloc(1, sizeof(spect));
+	y = prim;
+	int i = 1;
+	while (y != NULL)
+	{
+		fprintf(f, "%d %d %d %d", y->h1, y->m1, y->h2, y->m2);
+		//fprintf(f,"Spectacolul nr %d \"%s\" incepe la ora %d:%d si se termina la ora %d:%d\n", i, y->nume, y->h1, y->m1, y->h2, y->m2);
+		y = y->urm;
+		i++;
+	}
+}
+
+void orar(int h3, int m3, int h4, int m4)
+{
+	spect *y = (spect*)calloc(1, sizeof(spect));
+	y = prim->urm;
+	int ultim_h = 0, ultim_m = 0, i = 1;
+	while (y != NULL)
+	{
+		if (((ultim_h * 60 + ultim_m) <= (y->h1 * 60 + y->m1)) && ((y->h1 * 60 + y->m1) >= (h3 * 60 + m3)) && ((y->h2 * 60 + y->m2)<=(h4*60+m4)))
+		{
+			printf("Spectacolul nr #%d cu titlul \"%s\" incepe la ora %d:%d si se incheie la ora %d:%d\n",i,y->nume,y->h1,y->m1,y->h2,y->m2);
+			i++;
+		}
+		y = y->urm;
+	}
+}
+
+void stergere(char *nume)
+{
+	spect *y = (spect*)calloc(1, sizeof(spect));
+	y = prim;
+	while (y != NULL)
+	{
+		if (strcmp(y->nume, nume) == 0){
+			y->prec->urm=y->urm;
+			y->urm->prec=y->prec;
+		}
+		y = y->urm;
+	}
+}
+
+void ordonare_sfarsit()
+{
+	spect *y = (spect*)calloc(1, sizeof(spect));
+	spect* n = (spect*)calloc(1, sizeof(spect));
+	int h1a = 0, h2a = 0, m1a = 0, m2a = 0;
+	char *p;
+	y = prim;
+	while (y != NULL)
+	{
+		n = y;
+		while (n != NULL)
+		{
+			if ((y->h2 * 60 + y->m2) > (n->h2 * 60 + n->m2))
+			{
+				p = (char*)calloc(1, sizeof(strlen(y->nume) + 1));
+				strcpy(p, y->nume);
+				h1a = y->h1;
+				h2a = y->h2;
+				m1a = y->m1;
+				m2a = y->m2;
+
+				y->h1 = n->h1;
+				y->h2 = n->h2;
+				y->m1 = n->m1;
+				y->m2 = n->m2;
+				y->nume = (char*)calloc(1, sizeof(strlen(n->nume) + 1));
+				strcpy(y->nume, n->nume);
+
+				n->h1 = h1a;
+				n->h2 = h2a;
+				n->m1 = m1a;
+				n->m2 = m2a;
+				n->nume = (char*)calloc(1, sizeof(strlen(p) + 1));
+				strcpy(n->nume, p);
+			}
+			n = n->urm;
+		}
+		y = y->urm;
+	}
+}
+/*
+void main()
+{
+	int n = 0;
+	int h_1 = 0, m_1 = 0;
+	int h_2 = 0, m_2 = 0;
+
+	int h_3 = 0, m_3 = 0;
+	int h_4 = 0, m_4 = 0;
+	char x[1024];
+	prim = NULL;
+	ultim = NULL;
+	printf("Dati nr de spectacole ");
+	scanf("%d", &n);
+	for (int i = 0; i < n; i++)
+	{
+		printf("Dati ora de inceput, sfarsit si numele spectacolului");
+		scanf("%d %d %d %d",&h_1,&m_1,&h_2,&m_2);
+		gets(x);
+		gets(x);
+		printf("%s", x);
+		adaugare(h_1,m_1,h_2,m_2,x);
+	}
+	/*afisare();
+	printf("Dati orele vizionarii\n");
+	printf("Ora inceput: ");
+	scanf("%d", &h_3);
+	printf("\nMinut inceput: ");
+	scanf("%d", &m_3);
+	printf("\nOra sfarsit: ");
+	scanf("%d", &h_4);
+	printf("Minut sfarsit: ");
+	scanf("%d", &m_4);
+	printf("\n\n\n\n\n\n\n\n");
+	ordonare_sfarsit();
+	afisare();
+}*/
