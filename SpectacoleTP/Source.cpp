@@ -10,13 +10,13 @@
 #define IDC_MAIN_EDIT	106		// Edit box identifier
 
 HWND hEdit;
-bool window1closed = false;
+
 HINSTANCE hInst;
 bool window2closed = false;
 const char g_szClassName[] = "myWindowClass";
 int cmd;
 WNDCLASSEX wc2;
-HWND b1, b2, b3, b4, c1, adag, sterg;
+HWND b1, b2, b3, b4, c1, adag, sterg, interv;
 char y[1024],h1[7],h2[7];
 int nr;
 
@@ -38,11 +38,11 @@ void afisare();
 
 FILE *f = fopen("text.txt", "w");
 
+LRESULT CALLBACK interval(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK sterge(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-LRESULT CALLBACK windowprocessforwindow2(HWND handleforwindow2, UINT message, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -89,27 +89,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					   {
 					   case button_1:
 					   {
-									adag = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, (DLGPROC)adaugare);
-									ShowWindow(adag,10);
-									UpdateWindow(adag);
+										adag = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, (DLGPROC)adaugare);
+										ShowWindow(adag,10);
+										UpdateWindow(adag);
 										break;
 					   }
 
-					   case button_2:
-					   {
-										
-										break;
+					   case button_2:{
+										 interv = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG3), hwnd, (DLGPROC)interval);
+										 break;
 					   }
 
 					   case button_3:
 					   {
-										sterg = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG2), hwnd, (DLGPROC)sterge);
-										break;
+										 sterg = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG2), hwnd, (DLGPROC)sterge);
+										 break;
 					   }
 
 					   case button_4:
 					   {
-										break;
+										 break;
 					   }
 
 					   }
@@ -168,6 +167,31 @@ LRESULT CALLBACK sterge(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
 			stergere(y);
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+LRESULT CALLBACK interval(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == IDOK)
+		{
+			//GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
 			EndDialog(hwnd, LOWORD(wParam));
 			return (INT_PTR)TRUE;
 		}
@@ -258,30 +282,40 @@ void formare_lista(char *nume,char *inceput,char *sfarsit)
 {
 	int i = 0, h_1 = 0, h_2 = 0, m_1 = 0, m_2 = 0;
 	char ore[4];
-	ore[0] = inceput[0];
-	ore[1] = inceput[1];
-	h_1 = atoi(ore);
-	ore[0] = inceput[3];
-	ore[1] = inceput[4];
-	m_1 = atoi(ore);
-	ore[0] = sfarsit[0];
-	ore[1] = sfarsit[1];
-	h_2 = atoi(ore);
-	ore[0] = sfarsit[3];
-	ore[1] = sfarsit[4];
-	m_2 = atoi(ore);
-	if ((h_1 > 24) || (h_2 > 24) || (m_1 > 60) || (m_2 > 60))				//Verificam daca orele introduse respecta formatul
+	char *p;
+	p = strtok(inceput, ":");
+	while (p != NULL)
 	{
+		if (i == 0){
+			h_1 = atoi(p);
+			i++;
+		}
+		else if (i == 1){
+			m_1 = atoi(p);
+		}
+		p = strtok(NULL, "\n");
+	}
+	i = 0;
+	p = strtok(sfarsit, ":");
+	while (p != NULL)
+	{
+		if (i == 0){
+			h_2 = atoi(p);
+			i++;
+		}
+		else if (i == 1){
+			m_2 = atoi(p);
+		}
+		p = strtok(NULL, "\n");
+	}
+	if ((h_1 > 24) || (h_2 > 24) || (m_1 > 60) || (m_2 > 60)){				//Verificam daca orele introduse respecta formatul
 		MessageBox(NULL, "A dat handicapatul ala cu viteza", "Eroare ba boule", MB_OK);
 			
 	}
-	else if((h_1 == h_2) && (m_1 <= m_2))
-	{
-		fprintf(f, "succes 1 ");
-		MessageBox(NULL, "A dat handicapatul ala cu viteza!", "Eroare ba boule!", MB_OK);
+	else if ((h_1 == h_2) && (m_1>m_2)){
+			MessageBox(NULL, "A dat handicapatul ala cu viteza!", "Eroare ba boule!", MB_OK);		
 	}
-	else if (h_1 < h_2)	{
-		fprintf(f, "succes 2");
+	else if (h_1 > h_2){
 		MessageBox(NULL, "A dat handicapatul ala cu viteza!", "Eroare ba boule!", MB_OK);
 	}
 	else {
@@ -292,16 +326,14 @@ void formare_lista(char *nume,char *inceput,char *sfarsit)
 		y->m2 = m_2;
 		y->nume = (char*)calloc(1, sizeof(strlen(nume) + 1));
 		strcpy(y->nume, nume);
-		if (prim == NULL)
-		{
+		if (prim == NULL){
 			prim = (spect*)calloc(1, sizeof(spect));
 			prim = y;
 			ultim = y;
 			y->urm = 0;
 			y->prec = 0;
 		}
-		else
-		{
+		else{
 			ultim->urm = y;
 			y->prec = ultim;
 			y->urm = 0;
