@@ -16,10 +16,10 @@ bool window2closed = false;
 const char g_szClassName[] = "myWindowClass";
 int cmd;
 WNDCLASSEX wc2;
-HWND b1, b2, b3, b4, c1, adag, sterg, interv;
-char y[1024],h1[7],h2[7];
+HWND b1, b2, b3, b4, c1, adag, sterg, interv,afis;
+char y[1024],z[1024],h1[7],h2[7];
 int nr;
-
+FILE *f = fopen("text.txt", "w");
 typedef struct spect
 {
 	char *nume;
@@ -36,7 +36,10 @@ void stergere(char *nume);
 
 void afisare();
 
-FILE *f = fopen("text.txt", "w");
+void AppendText(HWND hEditWnd, LPCTSTR Text);
+
+int verificare(char *nume,int &h_1, int &m_1);
+
 
 LRESULT CALLBACK interval(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -44,161 +47,11 @@ LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK sterge(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg)
-	{
 
-	case WM_CREATE:
-	{
-					  char buff[] = "Adaugare spectacol";
 
-					 
-					  b1 = CreateWindow("BUTTON", buff, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-						  50, 100, 140, 100, hwnd, (HMENU)button_1, NULL, NULL);
+//LRESULT CALLBACK afisaz(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-					  b2 = CreateWindow("BUTTON", "Interval orar", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-						  200, 100, 140, 100, hwnd, (HMENU)button_2, NULL, NULL);
-
-					  b3 = CreateWindow("BUTTON", "Stergere Spectacol", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-						  350, 100, 140, 100, hwnd, (HMENU)button_3, NULL, NULL);
-
-					  b4 = CreateWindow("BUTTON", "Afisare Spectacole", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-						  500, 100, 140, 100, hwnd, (HMENU)button_4, NULL, NULL);
-					
-					  break;
-	}
-
-	case WM_CLOSE:
-	{
-					 DestroyWindow(hwnd);
-					 break; 
-	}
-
-	case WM_DESTROY:
-	{				PostQuitMessage(0);
-					break; 
-	}
-
-	case WM_COMMAND:
-	{
-					   int wmId = LOWORD(wParam);
-					   int wmEvent = HIWORD(wParam);
-
-					   switch (wmId)
-					   {
-					   case button_1:
-					   {
-										adag = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, (DLGPROC)adaugare);
-										ShowWindow(adag,10);
-										UpdateWindow(adag);
-										break;
-					   }
-
-					   case button_2:{
-										 interv = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG3), hwnd, (DLGPROC)interval);
-										 break;
-					   }
-
-					   case button_3:
-					   {
-										 sterg = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG2), hwnd, (DLGPROC)sterge);
-										 break;
-					   }
-
-					   case button_4:
-					   {
-										 break;
-					   }
-
-					   }
-	}
-
-	default:
-		return DefWindowProc(hwnd, msg, wParam, lParam);
-	}
-	return 0;
-}
-
-LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	switch (msg)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hwnd, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		if (LOWORD(wParam) == IDOK12)
-		{
-			GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
-			GetDlgItemText(hwnd, IDC_EDIT2, h1, 7);
-			GetDlgItemText(hwnd, IDC_EDIT4, h2, 7);
-			formare_lista(y, h1, h2);
-			
-			EndDialog(hwnd, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
-}
-
-LRESULT CALLBACK sterge(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	switch (msg)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hwnd, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		if (LOWORD(wParam) == IDOK)
-		{
-			GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
-			stergere(y);
-			EndDialog(hwnd, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
-}
-
-LRESULT CALLBACK interval(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	switch (msg)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hwnd, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		if (LOWORD(wParam) == IDOK)
-		{
-			//GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
-			EndDialog(hwnd, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
-}
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow)
@@ -278,47 +131,251 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	return 0;
 }
 
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+
+	case WM_CREATE:
+	{
+					  char buff[] = "Adaugare spectacol";
+					  					 
+					  b1 = CreateWindow("BUTTON", buff, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+						  50, 100, 140, 100, hwnd, (HMENU)button_1, NULL, NULL);
+
+					  b2 = CreateWindow("BUTTON", "Interval orar", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+						  200, 100, 140, 100, hwnd, (HMENU)button_2, NULL, NULL);
+
+					  b3 = CreateWindow("BUTTON", "Stergere Spectacol", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+						  350, 100, 140, 100, hwnd, (HMENU)button_3, NULL, NULL);
+
+					  b4 = CreateWindow("BUTTON", "Afisare Spectacole", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+						  500, 100, 140, 100, hwnd, (HMENU)button_4, NULL, NULL);
+					
+					  break;
+	}
+
+	case WM_CLOSE:
+	{
+					 DestroyWindow(hwnd);
+					 break; 
+	}
+
+	case WM_DESTROY:
+	{				PostQuitMessage(0);
+					break; 
+	}
+
+	case WM_COMMAND:
+	{
+					   int wmId = LOWORD(wParam);
+					   int wmEvent = HIWORD(wParam);
+
+					   switch (wmId)
+					   {
+					   case button_1:
+					   {
+										adag = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, (DLGPROC)adaugare);
+										ShowWindow(adag,10);
+										UpdateWindow(adag);
+										break;
+					   }
+
+					   case button_2:{
+										 interv = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG3), hwnd, (DLGPROC)interval);
+										 break;
+					   }
+
+					   case button_3:
+					   {
+										 sterg = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG2), hwnd, (DLGPROC)sterge);
+										 break;
+					   }
+
+					   case button_4:
+					   {
+										//afis = (HWND)DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG4), hwnd, (DLGPROC)afisaz);
+										 break;
+					   }
+
+					   }
+	}
+
+	default:
+		return DefWindowProc(hwnd, msg, wParam, lParam);
+	}
+	return 0;
+}
+
+LRESULT CALLBACK adaugare(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	int ora_i = NULL, m_i = NULL, ora_s = NULL, m_s = NULL;
+	UNREFERENCED_PARAMETER(lParam);
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == IDOK12)
+		{
+			GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
+			GetDlgItemText(hwnd, IDC_EDIT2, h1, 7);
+			verificare(h1, ora_i, m_i);
+			GetDlgItemText(hwnd, IDC_EDIT4, h2, 7);
+			verificare(y, ora_s, m_s);
+			formare_lista(y, h1, h2);
+			if (verificare(h2, ora_s, m_s) == 1 || verificare(h2, ora_i, m_i) == 1){
+				EndDialog(hwnd, LOWORD(wParam));
+				return (INT_PTR)TRUE;
+			}
+			else MessageBox(NULL, "Orele introduse nu sunt corecte!", "Eroare", MB_OK);
+			
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+LRESULT CALLBACK sterge(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == IDOK)
+		{
+			GetDlgItemText(hwnd, IDC_EDIT1, y, 1024);
+			stergere(y);
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+LRESULT CALLBACK interval(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	int ora_i = NULL, m_i = NULL, ora_s = NULL, m_s = NULL;
+	UNREFERENCED_PARAMETER(lParam);
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+	{
+
+						  return (INT_PTR)TRUE;
+	}
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)	{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == IDOK3){
+			GetDlgItemText(hwnd, IDC_EDIT3, y, 1024);
+			if (verificare(y,ora_i,m_i) == 0) MessageBox(NULL, "A dat handicapatul ala cu viteza", "Eroare ba boule", MB_OK);			
+		}
+		if (LOWORD(wParam) == IDOK2){
+			GetDlgItemText(hwnd, IDC_EDIT5, z, 1024);
+			if (verificare(z,ora_s,m_s) == 0) MessageBox(NULL, "A dat handicapatul ala cu viteza", "Eroare ba boule", MB_OK);
+			}
+		if (LOWORD(wParam) == IDOK){
+			if (ora_i == NULL || m_i == NULL || ora_s == NULL || m_s == NULL){
+				MessageBox(NULL, "A dat handicapatul ala cu viteza", "Eroare ba boule", MB_OK);	
+			}
+			 else if ((ora_i == ora_s) && (m_i>m_s)){
+				 MessageBox(NULL, "A dat handicapatul ala cu viteza!", "Eroare ba boule!", MB_OK);
+			 }
+			 else {
+
+				 EndDialog(hwnd, LOWORD(wParam));
+				 return (INT_PTR)TRUE;
+				}
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+/*
+LRESULT CALLBACK afisaz(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+	{
+						  spect *y = (spect*)calloc(1, sizeof(spect));
+						  y = prim->urm;
+						  int ultim_h = 0, ultim_m = 0, i = 1;
+						  while (y != NULL)
+						  {
+							  if (((ultim_h * 60 + ultim_m) <= (y->h1 * 60 + y->m1)) && ((y->h1 * 60 + y->m1) >= (h3 * 60 + m3)) && ((y->h2 * 60 + y->m2) <= (h4 * 60 + m4)))
+							  {
+								  printf("Spectacolul nr #%d cu titlul \"%s\" incepe la ora %d:%d si se incheie la ora %d:%d\n", i, y->nume, y->h1, y->m1, y->h2, y->m2);
+								  i++;
+							  }
+							  y = y->urm;
+						  }
+						  return (INT_PTR)TRUE;
+	}
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == IDOK)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+*/
+
+void AppendText(HWND hEditWnd, LPCTSTR Text)
+{
+	int idx = GetWindowTextLength(hEditWnd);
+	SendMessage(hEditWnd, EM_SETSEL, (WPARAM)idx, (LPARAM)idx);
+	SendMessage(hEditWnd, EM_REPLACESEL, 0, (LPARAM)Text);
+}
+
+/*
+void print_traseu(HWND hEdit, spect *p)
+{
+	if (p != NULL)
+	{
+		AppendText(hEdit, TEXT(strcat(p->nume, "\n")));
+		print_traseu(hEdit, p->left);
+		print_traseu(hEdit, p->right);
+	}
+}*/
+
 void formare_lista(char *nume,char *inceput,char *sfarsit)
 {
 	int i = 0, h_1 = 0, h_2 = 0, m_1 = 0, m_2 = 0;
-	char ore[4];
-	char *p;
-	p = strtok(inceput, ":");
-	while (p != NULL)
-	{
-		if (i == 0){
-			h_1 = atoi(p);
-			i++;
-		}
-		else if (i == 1){
-			m_1 = atoi(p);
-		}
-		p = strtok(NULL, "\n");
-	}
-	i = 0;
-	p = strtok(sfarsit, ":");
-	while (p != NULL)
-	{
-		if (i == 0){
-			h_2 = atoi(p);
-			i++;
-		}
-		else if (i == 1){
-			m_2 = atoi(p);
-		}
-		p = strtok(NULL, "\n");
-	}
-	if ((h_1 > 24) || (h_2 > 24) || (m_1 > 60) || (m_2 > 60)){				//Verificam daca orele introduse respecta formatul
-		MessageBox(NULL, "A dat handicapatul ala cu viteza", "Eroare ba boule", MB_OK);
-			
-	}
-	else if ((h_1 == h_2) && (m_1>m_2)){
-			MessageBox(NULL, "A dat handicapatul ala cu viteza!", "Eroare ba boule!", MB_OK);		
-	}
-	else if (h_1 > h_2){
-		MessageBox(NULL, "A dat handicapatul ala cu viteza!", "Eroare ba boule!", MB_OK);
-	}
-	else {
+	//SCHIMBARE CU VERIFICARE(STRING,ORA,MINUT)
+	verificare(inceput, h_1, m_1);
+
+	verificare(sfarsit, h_2, m_2);
+	if (verificare(inceput, h_1, m_1) == 1 && verificare(sfarsit, h_2, m_2) == 1){
 		spect *y = (spect*)calloc(1, sizeof(spect));
 		y->h1 = h_1;
 		y->h2 = h_2;
@@ -340,8 +397,8 @@ void formare_lista(char *nume,char *inceput,char *sfarsit)
 			ultim = y;
 		}
 	}
-	afisare();
 }
+
 
 void afisare()
 {
@@ -427,6 +484,29 @@ void ordonare_sfarsit()
 		y = y->urm;
 	}
 }
+
+int verificare(char *y,int &h_1,int &m_1)
+{
+	char *p;
+	int i = 0;
+	p = strtok(y, ":");
+	while (p != NULL)
+	{
+		if (i == 0){
+			h_1 = atoi(p);
+			i++;
+		}
+		else if (i == 1){
+			m_1 = atoi(p);
+		}
+		p = strtok(NULL, "\n");
+	}
+	if (h_1 > 24 || h_1<0 || m_1>59 || m_1 < 0){
+		return 0;
+	}
+	return 1;
+}
+
 /*
 void main()
 {
